@@ -19,7 +19,7 @@ def read_training(filename):
         for picture in train_set:
             try:
                 labels.append(int(picture[0]))
-                weights = [int(pixel) for pixel in picture[1:]]
+                weights = [float(pixel)/255 for pixel in picture[1:]]
                 input_weights.append(weights)
             except ValueError:
                 continue
@@ -32,7 +32,7 @@ def read_test(filename):
         train_set = csv.reader(f)
         for picture in train_set:
             try:
-                weights = [int(pixel) for pixel in picture]
+                weights = [float(pixel)/255 for pixel in picture]
                 input_weights.append(weights)
             except ValueError:
                 continue
@@ -66,8 +66,13 @@ with open('result.csv', 'w') as out:
     for i, tst in enumerate(x_test):
         out.write(str(i))
         out.write(',')
-        res = model.predict(np.array([tst]))
-        out.write(str(res))
+        res = model.predict(np.array([tst]))[0]
+        for j in xrange(len(res)):
+            if res[j] > 0:
+                out.write(str(j))
+                break
+        else:
+            out.write('0')
         out.write('\n')
 
 
