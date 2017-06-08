@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
 
+from numpy import genfromtxt
 
 batch_size = 128
 num_classes = 10
@@ -12,34 +13,16 @@ epochs = 20
 
 
 def read_training(filename):
-    input_weights = []
-    labels = []
-    with open(filename, 'rb') as f:
-        train_set = csv.reader(f)
-        for picture in train_set:
-            try:
-                labels.append(int(picture[0]))
-                weights = [float(pixel)/255 for pixel in picture[1:]]
-                input_weights.append(weights)
-            except ValueError:
-                continue
+    my_data = genfromtxt(filename, delimiter=',', skip_header=1, dtype=np.float32)
+    labels = my_data[:, 0]
+    input_weights = my_data[:, 1:]
     return input_weights, labels
 
 
 def read_test(filename):
-    input_weights = []
-    with open(filename, 'rb') as f:
-        train_set = csv.reader(f)
-        for picture in train_set:
-            try:
-                weights = [float(pixel)/255 for pixel in picture]
-                input_weights.append(weights)
-            except ValueError:
-                continue
-    return input_weights
+    return genfromtxt(filename, delimiter=',', skip_header=1, dtype=np.float32)
 
 x_train, y_train = read_training('train.csv')
-# convert class vectors to binary class matrices
 y_train = keras.utils.to_categorical(y_train, num_classes)
 
 model = Sequential()
@@ -60,21 +43,22 @@ history = model.fit(x_train, y_train,
                     epochs=epochs,
                     verbose=1)
 
-x_test = read_test('test.csv')
-with open('result.csv', 'w') as out:
-    out.write('ImageId, Label\n')
-    for i, tst in enumerate(x_test):
-        out.write(str(i))
-        out.write(',')
-        res = model.predict(np.array([tst]))[0]
-        for j in xrange(len(res)):
-            if res[j] > 0:
-                out.write(str(j))
-                break
-        else:
-            out.write('0')
-        out.write('\n')
+test = read_test('test.csv')
+result_shape = (test.shape[0], 2)
+result = np.zeros(result_shape, dtype=np.int_)
+for i in range(result.shape[0]):
+    array = np.array([test[i]])
+    res = model.predict(array)[0]
+    for detected in xrange(len(res)):
+        if res[detected] > 0:
+            result[i][0] = i + 1
+            result[i][1] = detected
+            break
+    else:
+        result[i][0] = i + 1
+        result[i][1] = 0
 
+np.savetxt('result.csv', result, header='ImageId,Label', fmt='%d', delimiter=',', comments='')
 
 
 

@@ -27,7 +27,7 @@ model = Sequential()
 model.add(Dense(30, input_dim=1, activation='sigmoid'))
 model.add(Dense(1, activation='linear'))
 optm = SGD(lr=0.1, momentum=0.1)
-#optm = RMSprop()
+
 model.compile(optimizer=optm, loss='mean_squared_error', metrics=['accuracy'])
 
 # prepare training data
