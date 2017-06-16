@@ -2,7 +2,6 @@ import keras
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Dropout,Conv2D,MaxPooling2D, Flatten
-from keras.optimizers import Adadelta, RMSprop
 from keras import backend
 from numpy import genfromtxt
 
